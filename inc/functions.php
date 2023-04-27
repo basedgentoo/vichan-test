@@ -44,7 +44,7 @@ function loadConfig() {
 
 	$error = function_exists('error') ? 'error' : 'basic_error_function_because_the_other_isnt_loaded_yet';
 
-	$boardsuffix = isset($board['uri']) ? $board['uri'] : '';
+	$boardsuffix = $board['uri'] ?? '';
 
 	if (!isset($_SERVER['REMOTE_ADDR']))
 		$_SERVER['REMOTE_ADDR'] = '0.0.0.0';
@@ -71,41 +71,14 @@ function loadConfig() {
         	}
 	}
 	else {
-		$config = array();
+		$config = [];
 
 		reset_events();	
 
-		$arrays = array(
-			'db',
-			'api',
-			'cache',
-			'lock',
-			'queue',
-			'cookies',
-			'error',
-			'dir',
-			'mod',
-			'spam',
-			'filters',
-			'wordfilters',
-			'custom_capcode',
-			'custom_tripcode',
-			'dnsbl',
-			'dnsbl_exceptions',
-			'remote',
-			'allowed_ext',
-			'allowed_ext_files',
-			'file_icons',
-			'footer',
-			'stylesheets',
-			'additional_javascript',
-			'markup',
-			'custom_pages',
-			'dashboard_links'
-		);
+		$arrays = ['db', 'api', 'cache', 'lock', 'queue', 'cookies', 'error', 'dir', 'mod', 'spam', 'filters', 'wordfilters', 'custom_capcode', 'custom_tripcode', 'dnsbl', 'dnsbl_exceptions', 'remote', 'allowed_ext', 'allowed_ext_files', 'file_icons', 'footer', 'stylesheets', 'additional_javascript', 'markup', 'custom_pages', 'dashboard_links'];
 
 		foreach ($arrays as $key) {
-			$config[$key] = array();
+			$config[$key] = [];
 		}
 
 		if (!file_exists('inc/instance-config.php'))
@@ -127,7 +100,7 @@ function loadConfig() {
 			if (isset($board['dir']) && file_exists($board['dir'] . '/config.php')) {
 				$configstr .= file_get_contents($board['dir'] . '/config.php');
 			}
-			$matches = array();
+			$matches = [];
 			preg_match_all('/[^\/#*]\$config\s*\[\s*[\'"]locale[\'"]\s*\]\s*=\s*([\'"])(.*?)\1/', $configstr, $matches);
 			if ($matches && isset ($matches[2]) && $matches[2]) {
 				$matches = $matches[2];
@@ -165,26 +138,26 @@ function loadConfig() {
 		if (!isset($config['referer_match']))
 			if (isset($_SERVER['HTTP_HOST'])) {
 				$config['referer_match'] = '/^' .
-					(preg_match('@^https?://@', $config['root']) ? '' :
+					(preg_match('@^https?://@', (string) $config['root']) ? '' :
 						'https?:\/\/' . $_SERVER['HTTP_HOST']) .
-						preg_quote($config['root'], '/') .
+						preg_quote((string) $config['root'], '/') .
 					'(' .
-							str_replace('%s', $config['board_regex'], preg_quote($config['board_path'], '/')) .
+							str_replace('%s', $config['board_regex'], preg_quote((string) $config['board_path'], '/')) .
 							'(' .
-								preg_quote($config['file_index'], '/') . '|' .
-								str_replace('%d', '\d+', preg_quote($config['file_page'])) .
+								preg_quote((string) $config['file_index'], '/') . '|' .
+								str_replace('%d', '\d+', preg_quote((string) $config['file_page'])) .
 							')?' .
 						'|' .
-							str_replace('%s', $config['board_regex'], preg_quote($config['board_path'], '/')) .
-							preg_quote($config['dir']['res'], '/') .
+							str_replace('%s', $config['board_regex'], preg_quote((string) $config['board_path'], '/')) .
+							preg_quote((string) $config['dir']['res'], '/') .
 							'(' .
-								str_replace('%d', '\d+', preg_quote($config['file_page'], '/')) . '|' .
-								str_replace('%d', '\d+', preg_quote($config['file_page50'], '/')) . '|' .
-	                                                        str_replace(array('%d', '%s'), array('\d+', '[a-z0-9-]+'), preg_quote($config['file_page_slug'], '/')) . '|' .
-	                                                        str_replace(array('%d', '%s'), array('\d+', '[a-z0-9-]+'), preg_quote($config['file_page50_slug'], '/')) .
+								str_replace('%d', '\d+', preg_quote((string) $config['file_page'], '/')) . '|' .
+								str_replace('%d', '\d+', preg_quote((string) $config['file_page50'], '/')) . '|' .
+	                                                        str_replace(['%d', '%s'], ['\d+', '[a-z0-9-]+'], preg_quote((string) $config['file_page_slug'], '/')) . '|' .
+	                                                        str_replace(['%d', '%s'], ['\d+', '[a-z0-9-]+'], preg_quote((string) $config['file_page50_slug'], '/')) .
 							')' .
 						'|' .
-							preg_quote($config['file_mod'], '/') . '\?\/.+' .
+							preg_quote((string) $config['file_mod'], '/') . '\?\/.+' .
 					')([#?](.+)?)?$/ui';
 			} else {
 				// CLI mode
@@ -234,7 +207,7 @@ function loadConfig() {
 		if (!isset($config['user_flag']))
 			$config['user_flag'] = false;
 		if (!isset($config['user_flags']))
-			$config['user_flags'] = array();
+			$config['user_flags'] = [];
 
 		if (!isset($__version))
 			$__version = file_exists('.installed') ? trim(file_get_contents('.installed')) : false;
@@ -260,7 +233,7 @@ function loadConfig() {
 		$__ip = $_SERVER['REMOTE_ADDR'];
 
 	// ::ffff:0.0.0.0
-	if (preg_match('/^\:\:(ffff\:)?(\d+\.\d+\.\d+\.\d+)$/', $__ip, $m))
+	if (preg_match('/^\:\:(ffff\:)?(\d+\.\d+\.\d+\.\d+)$/', (string) $__ip, $m))
 		$_SERVER['REMOTE_ADDR'] = $m[2];
 
 	if ($config['verbose_errors']) {
@@ -304,19 +277,7 @@ function loadConfig() {
 	
 	if ($config['debug']) {
 		if (!isset($debug)) {
-			$debug = array(
-				'sql' => array(),
-				'exec' => array(),
-				'purge' => array(),
-				'cached' => array(),
-				'write' => array(),
-				'time' => array(
-					'db_queries' => 0,
-					'exec' => 0,
-				),
-				'start' => $microtime_start,
-				'start_debug' => microtime(true)
-			);
+			$debug = ['sql' => [], 'exec' => [], 'purge' => [], 'cached' => [], 'write' => [], 'time' => ['db_queries' => 0, 'exec' => 0], 'start' => $microtime_start, 'start_debug' => microtime(true)];
 			$debug['start'] = $microtime_start;
 		}
 	}
@@ -370,19 +331,14 @@ function verbose_error_handler($errno, $errstr, $errfile, $errline) {
 	if ($errno == E_DEPRECATED && !$config['deprecation_errors'])
 		return false;
 
-	error(utf8tohtml($errstr), true, array(
-		'file' => $errfile . ':' . $errline,
-		'errno' => $errno,
-		'error' => $errstr,
-		'backtrace' => array_slice(debug_backtrace(), 1)
-	));
+	error(utf8tohtml($errstr), true, ['file' => $errfile . ':' . $errline, 'errno' => $errno, 'error' => $errstr, 'backtrace' => array_slice(debug_backtrace(), 1)]);
 }
 
 function define_groups() {
 	global $config;
 
 	foreach ($config['mod']['groups'] as $group_value => $group_name) {
-		$group_name = strtoupper($group_name);
+		$group_name = strtoupper((string) $group_name);
 		if(!defined($group_name)) {
 			define($group_name, $group_value);
 		}
@@ -392,7 +348,7 @@ function define_groups() {
 }
 
 function create_antibot($board, $thread = null) {
-	require_once dirname(__FILE__) . '/anti-bot.php';
+	require_once __DIR__ . '/anti-bot.php';
 
 	return _create_antibot($board, $thread);
 }
@@ -411,7 +367,7 @@ function rebuildThemes($action, $boardname = false) {
 	else {
 		$query = query("SELECT `theme` FROM ``theme_settings`` WHERE `name` IS NULL AND `value` IS NULL") or error(db_error());
 
-		$themes = array();
+		$themes = [];
 
 		while ($theme = $query->fetch(PDO::FETCH_ASSOC)) {
 			$themes[] = $theme;
@@ -455,7 +411,8 @@ function rebuildThemes($action, $boardname = false) {
 
 
 function loadThemeConfig($_theme) {
-	global $config;
+	$theme = null;
+ global $config;
 
 	if (!file_exists($config['dir']['themes'] . '/' . $_theme . '/info.php'))
 		return false;
@@ -489,7 +446,7 @@ function themeSettings($theme) {
 	$query->bindValue(':theme', $theme);
 	$query->execute() or error(db_error($query));
 
-	$settings = array();
+	$settings = [];
 	while ($s = $query->fetch(PDO::FETCH_ASSOC)) {
 		$settings[$s['name']] = $s['value'];
 	}
@@ -500,27 +457,22 @@ function themeSettings($theme) {
 }
 
 function sprintf3($str, $vars, $delim = '%') {
-	$replaces = array();
+	$replaces = [];
 	foreach ($vars as $k => $v) {
 		$replaces[$delim . $k . $delim] = $v;
 	}
 	return str_replace(array_keys($replaces),
-					   array_values($replaces), $str);
+					   array_values($replaces), (string) $str);
 }
 
 function mb_substr_replace($string, $replacement, $start, $length) {
-	return mb_substr($string, 0, $start) . $replacement . mb_substr($string, $start + $length);
+	return mb_substr((string) $string, 0, $start) . $replacement . mb_substr((string) $string, $start + $length);
 }
 
 function setupBoard($array) {
 	global $board, $config;
 
-	$board = array(
-		'uri' => $array['uri'],
-		'title' => $array['title'],
-		'subtitle' => $array['subtitle'],
-		#'indexed' => $array['indexed'],
-	);
+	$board = ['uri' => $array['uri'], 'title' => $array['title'], 'subtitle' => $array['subtitle']];
 
 	// older versions
 	$board['name'] = &$board['title'];
@@ -547,7 +499,7 @@ function openBoard($uri) {
 	global $config, $build_pages, $board;
 
 	if ($config['try_smarter'])
-		$build_pages = array();
+		$build_pages = [];
 
 	// And what if we don't really need to change a board we have opened?
 	if (isset ($board) && isset ($board['uri']) && $board['uri'] == $uri) {
@@ -598,15 +550,15 @@ function purge($uri) {
 	global $config, $debug;
 
 	// Fix for Unicode
-	$uri = rawurlencode($uri); 
+	$uri = rawurlencode((string) $uri); 
 
 	$noescape = "/!~*()+:";
 	$noescape = preg_split('//', $noescape);
 	$noescape_url = array_map("rawurlencode", $noescape);
 	$uri = str_replace($noescape_url, $noescape, $uri);
 
-	if (preg_match($config['referer_match'], $config['root']) && isset($_SERVER['REQUEST_URI'])) {
-		$uri = (str_replace('\\', '/', dirname($_SERVER['REQUEST_URI'])) == '/' ? '/' : str_replace('\\', '/', dirname($_SERVER['REQUEST_URI'])) . '/') . $uri;
+	if (preg_match($config['referer_match'], (string) $config['root']) && isset($_SERVER['REQUEST_URI'])) {
+		$uri = (str_replace('\\', '/', dirname((string) $_SERVER['REQUEST_URI'])) == '/' ? '/' : str_replace('\\', '/', dirname((string) $_SERVER['REQUEST_URI'])) . '/') . $uri;
 	} else {
 		$uri = $config['root'] . $uri;
 	}
@@ -618,7 +570,7 @@ function purge($uri) {
 	foreach ($config['purge'] as &$purge) {
 		$host = &$purge[0];
 		$port = &$purge[1];
-		$http_host = isset($purge[2]) ? $purge[2] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost');
+		$http_host = $purge[2] ?? $_SERVER['HTTP_HOST'] ?? 'localhost';
 		$request = "PURGE {$uri} HTTP/1.1\r\nHost: {$http_host}\r\nUser-Agent: Tinyboard\r\nConnection: Close\r\n\r\n";
 		if ($fp = fsockopen($host, $port, $errno, $errstr, $config['purge_timeout'])) {
 			fwrite($fp, $request);
@@ -633,7 +585,7 @@ function purge($uri) {
 function file_write($path, $data, $simple = false, $skip_purge = false) {
 	global $config, $debug;
 
-	if (preg_match('/^remote:\/\/(.+)\:(.+)$/', $path, $m)) {
+	if (preg_match('/^remote:\/\/(.+)\:(.+)$/', (string) $path, $m)) {
 		if (isset($config['remote'][$m[1]])) {
 			require_once 'inc/remote.php';
 
@@ -658,7 +610,7 @@ function file_write($path, $data, $simple = false, $skip_purge = false) {
 		error('Unable to truncate file: ' . $path);
 
 	// Write data
-	if (($bytes = fwrite($fp, $data)) === false)
+	if (($bytes = fwrite($fp, (string) $data)) === false)
 		error('Unable to write to file: ' . $path);
 
 	// Unlock
@@ -681,7 +633,7 @@ function file_write($path, $data, $simple = false, $skip_purge = false) {
 		$gzpath = "$path.gz";
 
 		if ($bytes & ~0x3ff) {  // if ($bytes >= 1024)
-			if (file_put_contents($gzpath, gzencode($data), $simple ? 0 : LOCK_EX) === false)
+			if (file_put_contents($gzpath, gzencode((string) $data), $simple ? 0 : LOCK_EX) === false)
 				error("Unable to write to file: $gzpath");
 			//if (!touch($gzpath, filemtime($path), fileatime($path)))
 			//	error("Unable to touch file: $gzpath");
@@ -693,9 +645,9 @@ function file_write($path, $data, $simple = false, $skip_purge = false) {
 
 	if (!$skip_purge && isset($config['purge'])) {
 		// Purge cache
-		if (basename($path) == $config['file_index']) {
+		if (basename((string) $path) == $config['file_index']) {
 			// Index file (/index.html); purge "/" as well
-			$uri = dirname($path);
+			$uri = dirname((string) $path);
 			// root
 			if ($uri == '.')
 				$uri = '';
@@ -718,7 +670,7 @@ function file_unlink($path) {
 
 	if ($config['debug']) {
 		if (!isset($debug['unlink']))
-			$debug['unlink'] = array();
+			$debug['unlink'] = [];
 		$debug['unlink'][] = $path;
 	}
 
@@ -732,9 +684,9 @@ function file_unlink($path) {
 
 	if (isset($config['purge']) && $path[0] != '/' && isset($_SERVER['HTTP_HOST'])) {
 		// Purge cache
-		if (basename($path) == $config['file_index']) {
+		if (basename((string) $path) == $config['file_index']) {
 			// Index file (/index.html); purge "/" as well
-			$uri = dirname($path);
+			$uri = dirname((string) $path);
 			// root
 			if ($uri == '.')
 				$uri = '';
@@ -788,7 +740,7 @@ function listBoards($just_uri = false) {
 		$query = query("SELECT * FROM ``boards`` ORDER BY `uri`") or error(db_error());
 		$boards = $query->fetchAll();
 	} else {
-		$boards = array();
+		$boards = [];
 		$query = query("SELECT `uri` FROM ``boards``") or error(db_error());
 		while ($board = $query->fetchColumn()) {
 			$boards[] = $board;
@@ -803,38 +755,26 @@ function listBoards($just_uri = false) {
 
 function until($timestamp) {
 	$difference = $timestamp - time();
-	switch(TRUE){
-	case ($difference < 60):
-		return $difference . ' ' . ngettext('second', 'seconds', $difference);
-	case ($difference < 3600): //60*60 = 3600
-		return ($num = round($difference/(60))) . ' ' . ngettext('minute', 'minutes', $num);
-	case ($difference < 86400): //60*60*24 = 86400
-		return ($num = round($difference/(3600))) . ' ' . ngettext('hour', 'hours', $num);
-	case ($difference < 604800): //60*60*24*7 = 604800
-		return ($num = round($difference/(86400))) . ' ' . ngettext('day', 'days', $num);
-	case ($difference < 31536000): //60*60*24*365 = 31536000
-		return ($num = round($difference/(604800))) . ' ' . ngettext('week', 'weeks', $num);
-	default:
-		return ($num = round($difference/(31536000))) . ' ' . ngettext('year', 'years', $num);
-	}
+	return match (TRUE) {
+     $difference < 60 => $difference . ' ' . ngettext('second', 'seconds', $difference),
+     $difference < 3600 => ($num = round($difference/(60))) . ' ' . ngettext('minute', 'minutes', $num),
+     $difference < 86400 => ($num = round($difference/(3600))) . ' ' . ngettext('hour', 'hours', $num),
+     $difference < 604800 => ($num = round($difference/(86400))) . ' ' . ngettext('day', 'days', $num),
+     $difference < 31_536_000 => ($num = round($difference/(604800))) . ' ' . ngettext('week', 'weeks', $num),
+     default => ($num = round($difference/(31_536_000))) . ' ' . ngettext('year', 'years', $num),
+ };
 }
 
 function ago($timestamp) {
 	$difference = time() - $timestamp;
-	switch(TRUE){
-	case ($difference < 60) :
-		return $difference . ' ' . ngettext('second', 'seconds', $difference);
-	case ($difference < 3600): //60*60 = 3600
-		return ($num = round($difference/(60))) . ' ' . ngettext('minute', 'minutes', $num);
-	case ($difference <  86400): //60*60*24 = 86400
-		return ($num = round($difference/(3600))) . ' ' . ngettext('hour', 'hours', $num);
-	case ($difference < 604800): //60*60*24*7 = 604800
-		return ($num = round($difference/(86400))) . ' ' . ngettext('day', 'days', $num);
-	case ($difference < 31536000): //60*60*24*365 = 31536000
-		return ($num = round($difference/(604800))) . ' ' . ngettext('week', 'weeks', $num);
-	default:
-		return ($num = round($difference/(31536000))) . ' ' . ngettext('year', 'years', $num);
-	}
+	return match (TRUE) {
+     $difference < 60 => $difference . ' ' . ngettext('second', 'seconds', $difference),
+     $difference < 3600 => ($num = round($difference/(60))) . ' ' . ngettext('minute', 'minutes', $num),
+     $difference <  86400 => ($num = round($difference/(3600))) . ' ' . ngettext('hour', 'hours', $num),
+     $difference < 604800 => ($num = round($difference/(86400))) . ' ' . ngettext('day', 'days', $num),
+     $difference < 31_536_000 => ($num = round($difference/(604800))) . ' ' . ngettext('week', 'weeks', $num),
+     default => ($num = round($difference/(31_536_000))) . ' ' . ngettext('year', 'years', $num),
+ };
 }
 
 function displayBan($ban) {
@@ -861,7 +801,7 @@ function displayBan($ban) {
 		}
 	}
 	
-	$denied_appeals = array();
+	$denied_appeals = [];
 	$pending_appeal = false;
 	
 	if ($config['ban_appeals']) {
@@ -877,19 +817,8 @@ function displayBan($ban) {
 	
 	// Show banned page and exit
 	die(
-		Element($config['file_page_template'], array(
-			'title' => _('Banned!'),
-			'config' => $config,
-			'boardlist' => createBoardlist(isset($mod) ? $mod : false),
-			'body' => Element($config['file_banned'], array(
-				'config' => $config,
-				'ban' => $ban,
-				'board' => $board,
-				'post' => isset($post) ? $post->build(true) : false,
-				'denied_appeals' => $denied_appeals,
-				'pending_appeal' => $pending_appeal
-			)
-		))
+		Element($config['file_page_template'], ['title' => _('Banned!'), 'config' => $config, 'boardlist' => createBoardlist($mod ?? false), 'body' => Element($config['file_banned'], ['config' => $config, 'ban' => $ban, 'board' => $board, 'post' => isset($post) ? $post->build(true) : false, 'denied_appeals' => $denied_appeals, 'pending_appeal' => $pending_appeal]
+		)]
 	));
 }
 
@@ -904,12 +833,12 @@ function checkBan($board = false) {
 	if (event('check-ban', $board))
 		return true;
 
-	$ips = array();
+	$ips = [];
 
 	$ips[] = $_SERVER['REMOTE_ADDR'];
 
 	if ($config['proxy_check'] && isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-		$ips = array_merge($ips, explode(", ", $_SERVER['HTTP_X_FORWARDED_FOR']));
+		$ips = array_merge($ips, explode(", ", (string) $_SERVER['HTTP_X_FORWARDED_FOR']));
 	}
 
 	foreach ($ips as $ip) {
@@ -923,7 +852,7 @@ function checkBan($board = false) {
 						displayBan($ban);
 					} else {
 						header('Content-Type: text/json');
-						die(json_encode(array('error' => true, 'banned' => true)));
+						die(json_encode(['error' => true, 'banned' => true]));
 					}
 				}
 			} else {
@@ -931,7 +860,7 @@ function checkBan($board = false) {
 					displayBan($ban);
 				} else {
 					header('Content-Type: text/json');
-					die(json_encode(array('error' => true, 'banned' => true)));
+					die(json_encode(['error' => true, 'banned' => true]));
 				}
 			}
 		}
@@ -1042,9 +971,9 @@ function post(array $post) {
 	$query->bindValue(':name', $post['name']);
 	$query->bindValue(':body', $post['body']);
 	$query->bindValue(':body_nomarkup', $post['body_nomarkup']);
-	$query->bindValue(':time', isset($post['time']) ? $post['time'] : time(), PDO::PARAM_INT);
+	$query->bindValue(':time', $post['time'] ?? time(), PDO::PARAM_INT);
 	$query->bindValue(':password', $post['password']);		
-	$query->bindValue(':ip', isset($post['ip']) ? $post['ip'] : $_SERVER['REMOTE_ADDR']);
+	$query->bindValue(':ip', $post['ip'] ?? $_SERVER['REMOTE_ADDR']);
 
 	if ($post['op'] && $post['mod'] && isset($post['sticky']) && $post['sticky']) {
 		$query->bindValue(':sticky', true, PDO::PARAM_INT);
@@ -1084,7 +1013,7 @@ function post(array $post) {
 	}
 
 	if ($post['has_file']) {
-		$query->bindValue(':files', json_encode($post['files']));
+		$query->bindValue(':files', json_encode($post['files'], JSON_THROW_ON_ERROR));
 		$query->bindValue(':num_files', $post['num_files']);
 		$query->bindValue(':filehash', $post['filehash']);
 	} else {
@@ -1133,8 +1062,8 @@ function deleteFile($id, $remove_entirely_if_already=true, $file=null) {
 	$query->execute() or error(db_error($query));
 	if (!$post = $query->fetch(PDO::FETCH_ASSOC))
 		error($config['error']['invalidpost']);
-	$files = json_decode($post['files']);
-	$file_to_delete = $file !== false ? $files[(int)$file] : (object)array('file' => false);
+	$files = json_decode((string) $post['files'], null, 512, JSON_THROW_ON_ERROR);
+	$file_to_delete = $file !== false ? $files[(int)$file] : (object)['file' => false];
 
 	if (!$files[0]) error(_('That post has no files.'));
 
@@ -1161,7 +1090,7 @@ function deleteFile($id, $remove_entirely_if_already=true, $file=null) {
 		}
 	}
 
-	$query->bindValue(':file', json_encode($files), PDO::PARAM_STR);
+	$query->bindValue(':file', json_encode($files, JSON_THROW_ON_ERROR), PDO::PARAM_STR);
 
 	$query->bindValue(':id', $id, PDO::PARAM_INT);
 	$query->execute() or error(db_error($query));
@@ -1193,7 +1122,7 @@ function rebuildPost($id) {
 	$query->bindValue(':id', $id, PDO::PARAM_INT);
 	$query->execute() or error(db_error($query));
 
-	buildThread($post['thread'] ? $post['thread'] : $id);
+	buildThread($post['thread'] ?: $id);
 
 	return true;
 }
@@ -1213,7 +1142,7 @@ function deletePost($id, $error_if_doesnt_exist=true, $rebuild_after=true) {
 		else return false;
 	}
 
-	$ids = array();
+	$ids = [];
 
 	// Delete posts and maybe replies
 	while ($post = $query->fetch(PDO::FETCH_ASSOC)) {
@@ -1236,7 +1165,7 @@ function deletePost($id, $error_if_doesnt_exist=true, $rebuild_after=true) {
 		}
 		if ($post['files']) {
 			// Delete file
-			foreach (json_decode($post['files']) as $i => $f) {
+			foreach (json_decode((string) $post['files'], null, 512, JSON_THROW_ON_ERROR) as $i => $f) {
 				if ($f->file !== 'deleted') {
 					file_unlink($board['dir'] . $config['dir']['img'] . $f->file);
 					file_unlink($board['dir'] . $config['dir']['thumb'] . $f->thumb);
@@ -1300,7 +1229,8 @@ function deletePost($id, $error_if_doesnt_exist=true, $rebuild_after=true) {
 }
 
 function clean($pid = false) {
-	global $board, $config;
+	$iter = null;
+ global $board, $config;
 	$offset = round($config['max_pages']*$config['threads_per_page']);
 
 	// I too wish there was an easier way of doing this...
@@ -1358,7 +1288,8 @@ function thread_find_page($thread) {
 
 // $brief means that we won't need to generate anything yet
 function index($page, $mod=false, $brief = false) {
-	global $board, $config, $debug;
+	$omitted = [];
+ global $board, $config, $debug;
 
 	$body = '';
 	$offset = round($page*$config['threads_per_page']-$config['threads_per_page']);
@@ -1374,7 +1305,7 @@ function index($page, $mod=false, $brief = false) {
 	if ($query->rowCount() < 1 && $page > 1)
 		return false;
 
-	$threads = array();
+	$threads = [];
 	
 	while ($th = $query->fetch(PDO::FETCH_ASSOC)) {
 		$thread = new Thread($th, $mod ? '?/' : $config['root'], $mod);
@@ -1399,16 +1330,13 @@ function index($page, $mod=false, $brief = false) {
 
 			if (count($replies) == ($th['sticky'] ? $config['threads_preview_sticky'] : $config['threads_preview'])) {
 				$count = numPosts($th['id']);
-				$omitted = array('post_count' => $count['replies'], 'image_count' => $count['images']);
+				$omitted = ['post_count' => $count['replies'], 'image_count' => $count['images']];
 			} else {
 				$omitted = false;
 			}
 
 			if ($config['cache']['enabled'])
-				cache::set("thread_index_{$board['uri']}_{$th['id']}", array(
-					'replies' => $replies,
-					'omitted' => $omitted,
-				));
+				cache::set("thread_index_{$board['uri']}_{$th['id']}", ['replies' => $replies, 'omitted' => $omitted]);
 		}
 
 		$num_images = 0;
@@ -1420,7 +1348,7 @@ function index($page, $mod=false, $brief = false) {
 		}
 
 		$thread->images = $num_images;
-		$thread->replies = isset($omitted['post_count']) ? $omitted['post_count'] : count($replies);
+		$thread->replies = $omitted['post_count'] ?? count($replies);
 
 		if ($omitted) {
 			$thread->omitted = $omitted['post_count'] - ($th['sticky'] ? $config['threads_preview_sticky'] : $config['threads_preview']);
@@ -1435,23 +1363,16 @@ function index($page, $mod=false, $brief = false) {
 	}
 
 	if ($config['file_board']) {
-		$body = Element($config['file_fileboard'], array('body' => $body, 'mod' => $mod));
+		$body = Element($config['file_fileboard'], ['body' => $body, 'mod' => $mod]);
 	}
 
-	return array(
-		'board' => $board,
-		'body' => $body,
-		'post_url' => $config['post_url'],
-		'config' => $config,
-		'boardlist' => createBoardlist($mod),
-		'threads' => $threads,
-	);
+	return ['board' => $board, 'body' => $body, 'post_url' => $config['post_url'], 'config' => $config, 'boardlist' => createBoardlist($mod), 'threads' => $threads];
 }
 
 function getPageButtons($pages, $mod=false) {
 	global $config, $board;
 
-	$btn = array();
+	$btn = [];
 	$root = ($mod ? '?/' : $config['root']) . $board['dir'];
 
 	foreach ($pages as $num => $page) {
@@ -1476,7 +1397,7 @@ function getPageButtons($pages, $mod=false) {
 				'<input type="submit" value="' . _('Previous') . '" /></form>';
 			}
 
-			if ($num == count($pages) - 1) {
+			if ($num == (is_countable($pages) ? count($pages) : 0) - 1) {
 				// There is no next page.
 				$btn['next'] = _('Next');
 			} else {
@@ -1509,12 +1430,9 @@ function getPages($mod=false) {
 
 	if ($count < 1) $count = 1;
 
-	$pages = array();
+	$pages = [];
 	for ($x=0;$x<$count && $x<$config['max_pages'];$x++) {
-		$pages[] = array(
-			'num' => $x+1,
-			'link' => $x==0 ? ($mod ? '?/' : $config['root']) . $board['dir'] . $config['file_index'] : ($mod ? '?/' : $config['root']) . $board['dir'] . sprintf($config['file_page'], $x+1)
-		);
+		$pages[] = ['num' => $x+1, 'link' => $x==0 ? ($mod ? '?/' : $config['root']) . $board['dir'] . $config['file_index'] : ($mod ? '?/' : $config['root']) . $board['dir'] . sprintf($config['file_page'], $x+1)];
 	}
 
 	return $pages;
@@ -1524,7 +1442,7 @@ function getPages($mod=false) {
 function make_comment_hex($str) {
 	// remove cross-board citations
 	// the numbers don't matter
-	$str = preg_replace('!>>>/[A-Za-z0-9]+/!', '', $str);
+	$str = preg_replace('!>>>/[A-Za-z0-9]+/!', '', (string) $str);
 
 	if (function_exists('iconv')) {
 		// remove diacritics and other noise
@@ -1544,7 +1462,7 @@ function make_comment_hex($str) {
 
 function makerobot($body) {
 	global $config;
-	$body = strtolower($body);
+	$body = strtolower((string) $body);
 
 	// Leave only letters
 	$body = preg_replace('/[^a-z]/i', '', $body);
@@ -1600,7 +1518,7 @@ function muteTime() {
 
 	if (!$result = $query->fetchColumn())
 		return 0;
-	return pow($config['robot_mute_multiplier'], $result);
+	return $config['robot_mute_multiplier'] ** $result;
 }
 
 function mute() {
@@ -1618,7 +1536,7 @@ function checkMute() {
 
 	if ($config['cache']['enabled']) {
 		// Cached mute?
-		if (($mute = cache::get("mute_${_SERVER['REMOTE_ADDR']}")) && ($mutetime = cache::get("mutetime_${_SERVER['REMOTE_ADDR']}"))) {
+		if (($mute = cache::get("mute_{$_SERVER['REMOTE_ADDR']}")) && ($mutetime = cache::get("mutetime_{$_SERVER['REMOTE_ADDR']}"))) {
 			error(sprintf($config['error']['youaremuted'], $mute['time'] + $mutetime - time()));
 		}
 	}
@@ -1637,8 +1555,8 @@ function checkMute() {
 
 		if ($mute['time'] + $mutetime > time()) {
 			if ($config['cache']['enabled']) {
-				cache::set("mute_${_SERVER['REMOTE_ADDR']}", $mute, $mute['time'] + $mutetime - time());
-				cache::set("mutetime_${_SERVER['REMOTE_ADDR']}", $mutetime, $mute['time'] + $mutetime - time());
+				cache::set("mute_{$_SERVER['REMOTE_ADDR']}", $mute, $mute['time'] + $mutetime - time());
+				cache::set("mutetime_{$_SERVER['REMOTE_ADDR']}", $mutetime, $mute['time'] + $mutetime - time());
 			}
 			// Not expired yet
 			error(sprintf($config['error']['youaremuted'], $mute['time'] + $mutetime - time()));
@@ -1652,7 +1570,7 @@ function checkMute() {
 function _create_antibot($board, $thread) {
 	global $config, $purged_old_antispam;
 
-	$antibot = new AntiBot(array($board, $thread));
+	$antibot = new AntiBot([$board, $thread]);
 
 	if (!isset($purged_old_antispam)) {
 		$purged_old_antispam = true;
@@ -1679,7 +1597,7 @@ function _create_antibot($board, $thread) {
 	return $antibot;
 }
 
-function checkSpam(array $extra_salt = array()) {
+function checkSpam(array $extra_salt = []) {
 	global $config, $pdo;
 
 	if (!isset($_POST['hash']))
@@ -1695,7 +1613,7 @@ function checkSpam(array $extra_salt = array()) {
 	}
 
 	// Reconsturct the $inputs array
-	$inputs = array();
+	$inputs = [];
 
 	foreach ($_POST as $name => $value) {
 		if (in_array($name, $config['spam']['valid_inputs']))
@@ -1741,16 +1659,18 @@ function incrementSpamHash($hash) {
 }
 
 function buildIndex($global_api = "yes") {
-	global $board, $config, $build_pages;
+	$catalog = [];
+ $action = null;
+ global $board, $config, $build_pages;
 
-	$catalog_api_action = generation_strategy('sb_api', array($board['uri']));
+	$catalog_api_action = generation_strategy('sb_api', [$board['uri']]);
 
 	$pages = null;
 	$antibot = null;
 
 	if ($config['api']['enabled']) {
 		$api = new Api();
-		$catalog = array();
+		$catalog = [];
 	}
 
 	for ($page = 1; $page <= $config['max_pages']; $page++) {
@@ -1762,7 +1682,7 @@ function buildIndex($global_api = "yes") {
 		if ((!$config['api']['enabled'] || $global_api == "skip") && $wont_build_this_page)
 			continue;
 
-		$action = generation_strategy('sb_board', array($board['uri'], $page));
+		$action = generation_strategy('sb_board', [$board['uri'], $page]);
 		if ($action == 'rebuild' || $catalog_api_action == 'rebuild') {
 			$content = index($page, false, $wont_build_this_page);
 			if (!$content)
@@ -1771,7 +1691,7 @@ function buildIndex($global_api = "yes") {
 			// json api
 			if ($config['api']['enabled']) {
 				$threads = $content['threads'];
-				$json = json_encode($api->translatePage($threads));
+				$json = json_encode($api->translatePage($threads), JSON_THROW_ON_ERROR);
 				file_write($jsonFilename, $json);
 
 				$catalog[$page-1] = $threads;
@@ -1825,37 +1745,32 @@ function buildIndex($global_api = "yes") {
 			file_unlink($jsonFilename);
 		}
 		elseif ($catalog_api_action == 'rebuild') {
-			$json = json_encode($api->translateCatalog($catalog));
+			$json = json_encode($api->translateCatalog($catalog), JSON_THROW_ON_ERROR);
 			$jsonFilename = $board['dir'] . 'catalog.json';
 			file_write($jsonFilename, $json);
 
-			$json = json_encode($api->translateCatalog($catalog, true));
+			$json = json_encode($api->translateCatalog($catalog, true), JSON_THROW_ON_ERROR);
 			$jsonFilename = $board['dir'] . 'threads.json';
 			file_write($jsonFilename, $json);
 		}
 	}
 
 	if ($config['try_smarter'])
-		$build_pages = array();
+		$build_pages = [];
 }
 
 function buildJavascript() {
 	global $config;
 
-	$stylesheets = array();
+	$stylesheets = [];
 	foreach ($config['stylesheets'] as $name => $uri) {
-		$stylesheets[] = array(
-			'name' => addslashes($name),
-			'uri' => addslashes((!empty($uri) ? $config['uri_stylesheets'] : '') . $uri));
+		$stylesheets[] = ['name' => addslashes((string) $name), 'uri' => addslashes((!empty($uri) ? $config['uri_stylesheets'] : '') . $uri)];
 	}
 
-	$script = Element('main.js', array(
-		'config' => $config,
-		'stylesheets' => $stylesheets
-	));
+	$script = Element('main.js', ['config' => $config, 'stylesheets' => $stylesheets]);
 
 	// Check if we have translation for the javascripts; if yes, we add it to additional javascripts
-	list($pure_locale) = explode(".", $config['locale']);
+	[$pure_locale] = explode(".", (string) $config['locale']);
 	if (file_exists ($jsloc = "inc/locale/$pure_locale/LC_MESSAGES/javascript.js")) {
 		$script = file_get_contents($jsloc) . "\n\n" . $script;
 	}
@@ -1882,7 +1797,7 @@ function checkDNSBL() {
 	if (!isset($_SERVER['REMOTE_ADDR']))
 		return; // Fix your web server configuration
 
-	if (preg_match("/^(::(ffff:)?)?(127\.|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|0\.|255\.)/", $_SERVER['REMOTE_ADDR']))
+	if (preg_match("/^(::(ffff:)?)?(127\.|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|0\.|255\.)/", (string) $_SERVER['REMOTE_ADDR']))
 		return; // It's pointless to check for local IP addresses in dnsbls, isn't it?
 
 	if (in_array($_SERVER['REMOTE_ADDR'], $config['dnsbl_exceptions']))
@@ -1892,15 +1807,15 @@ function checkDNSBL() {
 
 	foreach ($config['dnsbl'] as $blacklist) {
 		if (!is_array($blacklist))
-			$blacklist = array($blacklist);
+			$blacklist = [$blacklist];
 
-		if (($lookup = str_replace('%', $ipaddr, $blacklist[0])) == $blacklist[0])
+		if (($lookup = str_replace('%', $ipaddr, (string) $blacklist[0])) == $blacklist[0])
 			$lookup = $ipaddr . '.' . $blacklist[0];
 
 		if (!$ip = DNS($lookup))
 			continue; // not in list
 
-		$blacklist_name = isset($blacklist[2]) ? $blacklist[2] : $blacklist[0];
+		$blacklist_name = $blacklist[2] ?? $blacklist[0];
 
 		if (!isset($blacklist[1])) {
 			// If you're listed at all, you're blocked.
@@ -1921,11 +1836,11 @@ function checkDNSBL() {
 }
 
 function isIPv6() {
-	return strstr($_SERVER['REMOTE_ADDR'], ':') !== false;
+	return str_contains((string) $_SERVER['REMOTE_ADDR'], ':');
 }
 
 function ReverseIPOctets($ip) {
-	return implode('.', array_reverse(explode('.', $ip)));
+	return implode('.', array_reverse(explode('.', (string) $ip)));
 }
 
 function wordfilters(&$body) {
@@ -1934,11 +1849,11 @@ function wordfilters(&$body) {
 	foreach ($config['wordfilters'] as $filter) {
 		if (isset($filter[2]) && $filter[2]) {
 			if (is_callable($filter[1]))
-				$body = preg_replace_callback($filter[0], $filter[1], $body);
+				$body = preg_replace_callback($filter[0], $filter[1], (string) $body);
 			else
-				$body = preg_replace($filter[0], $filter[1], $body);
+				$body = preg_replace($filter[0], (string) $filter[1], (string) $body);
 		} else {
-			$body = str_ireplace($filter[0], $filter[1], $body);
+			$body = str_ireplace((string) $filter[0], (string) $filter[1], (string) $body);
 		}
 	}
 }
@@ -1946,7 +1861,7 @@ function wordfilters(&$body) {
 function quote($body, $quote=true) {
 	global $config;
 
-	$body = str_replace('<br/>', "\n", $body);
+	$body = str_replace('<br/>', "\n", (string) $body);
 
 	$body = strip_tags($body);
 
@@ -1968,17 +1883,12 @@ function markup_url($matches) {
 
 	$markup_urls[] = $url;
 
-	$link = (object) array(
-		'href' => $config['link_prefix'] . $url,
-		'text' => $url,
-		'rel' => 'nofollow',
-		'target' => '_blank',
-	);
+	$link = (object) ['href' => $config['link_prefix'] . $url, 'text' => $url, 'rel' => 'nofollow', 'target' => '_blank'];
 	
 	event('markup-url', $link);
 	$link = (array)$link;
 
-	$parts = array();
+	$parts = [];
 	foreach ($link as $attr => $value) {
 		if ($attr == 'text' || $attr == 'after')
 			continue;
@@ -1990,7 +1900,7 @@ function markup_url($matches) {
 }
 
 function unicodify($body) {
-	$body = str_replace('...', '&hellip;', $body);
+	$body = str_replace('...', '&hellip;', (string) $body);
 	$body = str_replace('&lt;--', '&larr;', $body);
 	$body = str_replace('--&gt;', '&rarr;', $body);
 
@@ -2004,9 +1914,9 @@ function unicodify($body) {
 }
 
 function extract_modifiers($body) {
-	$modifiers = array();
+	$modifiers = [];
 	
-	if (preg_match_all('@<tinyboard ([\w\s]+)>(.*?)</tinyboard>@us', $body, $matches, PREG_SET_ORDER)) {
+	if (preg_match_all('@<tinyboard ([\w\s]+)>(.*?)</tinyboard>@us', (string) $body, $matches, PREG_SET_ORDER)) {
 		foreach ($matches as $match) {
 			if (preg_match('/^escape /', $match[1]))
 				continue;
@@ -2018,7 +1928,7 @@ function extract_modifiers($body) {
 }
 
 function remove_modifiers($body) {
-	return preg_replace('@<tinyboard ([\w\s]+)>(.+?)</tinyboard>@usm', '', $body);
+	return preg_replace('@<tinyboard ([\w\s]+)>(.+?)</tinyboard>@usm', '', (string) $body);
 }
 
 function markup(&$body, $track_cites = false, $op = false) {
@@ -2026,43 +1936,43 @@ function markup(&$body, $track_cites = false, $op = false) {
 	
 	$modifiers = extract_modifiers($body);
 	
-	$body = preg_replace('@<tinyboard (?!escape )([\w\s]+)>(.+?)</tinyboard>@us', '', $body);
+	$body = preg_replace('@<tinyboard (?!escape )([\w\s]+)>(.+?)</tinyboard>@us', '', (string) $body);
 	$body = preg_replace('@<(tinyboard) escape ([\w\s]+)>@i', '<$1 $2>', $body);
 	
 	if (isset($modifiers['raw html']) && $modifiers['raw html'] == '1') {
-		return array();
+		return [];
 	}
 
 	$body = str_replace("\r", '', $body);
 	$body = utf8tohtml($body);
 
 	if (mysql_version() < 50503)
-		$body = mb_encode_numericentity($body, array(0x010000, 0xffffff, 0, 0xffffff), 'UTF-8');
+		$body = mb_encode_numericentity((string) $body, [0x010000, 0xffffff, 0, 0xffffff], 'UTF-8');
 
 	if ($config['markup_code']) {
-		$code_markup = array();
+		$code_markup = [];
 		$body = preg_replace_callback($config['markup_code'], function($matches) use (&$code_markup) {
 			$d = count($code_markup);
 			$code_markup[] = $matches;
 			return "<code $d>";
-		}, $body);
+		}, (string) $body);
 	}
 
 	foreach ($config['markup'] as $markup) {
 		if (is_string($markup[1])) {
-			$body = preg_replace($markup[0], $markup[1], $body);
+			$body = preg_replace($markup[0], $markup[1], (string) $body);
 		} elseif (is_callable($markup[1])) {
-			$body = preg_replace_callback($markup[0], $markup[1], $body);
+			$body = preg_replace_callback($markup[0], $markup[1], (string) $body);
 		}
 	}
 
 	if ($config['markup_urls']) {
-		$markup_urls = array();
+		$markup_urls = [];
 
 		$body = preg_replace_callback(
 				'/((?:https?:\/\/|ftp:\/\/|irc:\/\/)[^\s<>()"]+?(?:\([^\s<>()"]*?\)[^\s<>()"]*?)*)((?:\s|<|>|"|\.||\]|!|\?|,|&#44;|&quot;)*(?:[\s<>()"]|$))/',
 				'markup_url',
-				$body,
+				(string) $body,
 				-1,
 				$num_links);
 
@@ -2071,22 +1981,22 @@ function markup(&$body, $track_cites = false, $op = false) {
 	}
 
 	if ($config['markup_repair_tidy'])
-		$body = str_replace('  ', ' &nbsp;', $body);
+		$body = str_replace('  ', ' &nbsp;', (string) $body);
 
 	if ($config['auto_unicode']) {
 		$body = unicodify($body);
 
 		if ($config['markup_urls']) {
 			foreach ($markup_urls as &$url) {
-				$body = str_replace(unicodify($url), $url, $body);
+				$body = str_replace(unicodify($url), $url, (string) $body);
 			}
 		}
 	}
 
-	$tracked_cites = array();
+	$tracked_cites = [];
 
 	// Cites
-	if (isset($board) && preg_match_all('/(^|[\s(])&gt;&gt;(\d+?)((?=[\s,.)?!])|$)/m', $body, $cites, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
+	if (isset($board) && preg_match_all('/(^|[\s(])&gt;&gt;(\d+?)((?=[\s,.)?!])|$)/m', (string) $body, $cites, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
 		if (count($cites[0]) > $config['max_cites']) {
 			error($config['error']['toomanycites']);
 		}
@@ -2094,7 +2004,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 		$skip_chars = 0;
 		$body_tmp = $body;
 
-		$search_cites = array();
+		$search_cites = [];
 		foreach ($cites as $matches) {
 			$search_cites[] = '`id` = ' . $matches[2][0];
 		}
@@ -2103,9 +2013,9 @@ function markup(&$body, $track_cites = false, $op = false) {
 		$query = query(sprintf('SELECT `thread`, `id` FROM ``posts_%s`` WHERE ' .
 			implode(' OR ', $search_cites), $board['uri'])) or error(db_error());
 
-		$cited_posts = array();
+		$cited_posts = [];
 		while ($cited = $query->fetch(PDO::FETCH_ASSOC)) {
-			$cited_posts[$cited['id']] = $cited['thread'] ? $cited['thread'] : false;
+			$cited_posts[$cited['id']] = $cited['thread'] ?: false;
 		}
 	
 		foreach ($cites as $matches) {
@@ -2113,13 +2023,13 @@ function markup(&$body, $track_cites = false, $op = false) {
 
 			// preg_match_all is not multibyte-safe
 			foreach ($matches as &$match) {
-				$match[1] = mb_strlen(substr($body_tmp, 0, $match[1]));
+				$match[1] = mb_strlen(substr((string) $body_tmp, 0, $match[1]));
 			}
 
 			if (isset($cited_posts[$cite])) {
 				$replacement = '<a onclick="highlightReply(\''.$cite.'\', event);" href="' .
 					$config['root'] . $board['dir'] . $config['dir']['res'] .
-					link_for(array('id' => $cite, 'thread' => $cited_posts[$cite])) . '#' . $cite . '">' .
+					link_for(['id' => $cite, 'thread' => $cited_posts[$cite]]) . '#' . $cite . '">' .
 					'&gt;&gt;' . $cite .
 					'</a>';
 
@@ -2127,13 +2037,13 @@ function markup(&$body, $track_cites = false, $op = false) {
 				$skip_chars += mb_strlen($matches[1][0] . $replacement . $matches[3][0]) - mb_strlen($matches[0][0]);
 
 				if ($track_cites && $config['track_cites'])
-					$tracked_cites[] = array($board['uri'], $cite);
+					$tracked_cites[] = [$board['uri'], $cite];
 			}
 		}
 	}
 
 	// Cross-board linking
-	if (preg_match_all('/(^|[\s(])&gt;&gt;&gt;\/(' . $config['board_regex'] . 'f?)\/(\d+)?((?=[\s,.)?!])|$)/um', $body, $cites, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
+	if (preg_match_all('/(^|[\s(])&gt;&gt;&gt;\/(' . $config['board_regex'] . 'f?)\/(\d+)?((?=[\s,.)?!])|$)/um', (string) $body, $cites, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
 		if (count($cites[0]) > $config['max_cites']) {
 			error($config['error']['toomanycross']);
 		}
@@ -2145,31 +2055,29 @@ function markup(&$body, $track_cites = false, $op = false) {
 			// Carry found posts from local board >>X links
 			foreach ($cited_posts as $cite => $thread) {
 				$cited_posts[$cite] = $config['root'] . $board['dir'] . $config['dir']['res'] .
-					($thread ? $thread : $cite) . '.html#' . $cite;
+					($thread ?: $cite) . '.html#' . $cite;
 			}
 
-			$cited_posts = array(
-				$board['uri'] => $cited_posts
-			);
+			$cited_posts = [$board['uri'] => $cited_posts];
 		} else
-			$cited_posts = array();
+			$cited_posts = [];
 		
-		$crossboard_indexes = array();
-		$search_cites_boards = array();
+		$crossboard_indexes = [];
+		$search_cites_boards = [];
 		
 		foreach ($cites as $matches) {
 			$_board = $matches[2][0];
 			$cite = @$matches[3][0];
 			
 			if (!isset($search_cites_boards[$_board]))
-				$search_cites_boards[$_board] = array();
+				$search_cites_boards[$_board] = [];
 			$search_cites_boards[$_board][] = $cite;
 		}
 		
 		$tmp_board = $board['uri'];
 		
 		foreach ($search_cites_boards as $_board => $search_cites) {
-			$clauses = array();
+			$clauses = [];
 			foreach ($search_cites as $cite) {
 				if (!$cite || isset($cited_posts[$_board][$cite]))
 					continue;
@@ -2183,7 +2091,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 			}
 			
 			if (!empty($clauses)) {
-				$cited_posts[$_board] = array();
+				$cited_posts[$_board] = [];
 				
 				$query = query(sprintf('SELECT `thread`, `id`, `slug` FROM ``posts_%s`` WHERE ' .
 					implode(' OR ', $clauses), $board['uri'])) or error(db_error());
@@ -2207,7 +2115,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 
 			// preg_match_all is not multibyte-safe
 			foreach ($matches as &$match) {
-				$match[1] = mb_strlen(substr($body_tmp, 0, $match[1]));
+				$match[1] = mb_strlen(substr((string) $body_tmp, 0, $match[1]));
 			}
 
 			if ($cite) {
@@ -2225,7 +2133,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 					$skip_chars += mb_strlen($matches[1][0] . $replacement . $matches[4][0]) - mb_strlen($matches[0][0]);
 
 					if ($track_cites && $config['track_cites'])
-						$tracked_cites[] = array($_board, $cite);
+						$tracked_cites[] = [$_board, $cite];
 				}
 			} elseif(isset($crossboard_indexes[$_board])) {
 				$replacement = '<a href="' . $crossboard_indexes[$_board] . '">' .
@@ -2239,7 +2147,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 	
 	$tracked_cites = array_unique($tracked_cites, SORT_REGULAR);
 
-	$body = preg_replace("/^\s*&gt;.*$/m", '<span class="quote">$0</span>', $body);
+	$body = preg_replace("/^\s*&gt;.*$/m", '<span class="quote">$0</span>', (string) $body);
 
 	if ($config['strip_superfluous_returns'])
 		$body = preg_replace('/\s+$/', '', $body);
@@ -2249,10 +2157,10 @@ function markup(&$body, $track_cites = false, $op = false) {
 	// Fix code markup
 	if ($config['markup_code']) {
 		foreach ($code_markup as $id => $val) {
-			$code = isset($val[2]) ? $val[2] : $val[1];
+			$code = $val[2] ?? $val[1];
 			$code_lang = isset($val[2]) ? $val[1] : "";
 
-			$code = "<pre class='code lang-$code_lang'>".str_replace(array("\n","\t"), array("&#10;","&#9;"), htmlspecialchars($code))."</pre>";
+			$code = "<pre class='code lang-$code_lang'>".str_replace(["\n", "\t"], ["&#10;", "&#9;"], htmlspecialchars($code))."</pre>";
 
 			$body = str_replace("<code $id>", $code, $body);
 		}
@@ -2261,18 +2169,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 	if ($config['markup_repair_tidy']) {
 		$tidy = new tidy();
 		$body = str_replace("\t", '&#09;', $body);
-		$body = $tidy->repairString($body, array(
-			'doctype' => 'omit',
-			'bare' => $config['markup_repair_tidy_bare'],
-			'literal-attributes' => true,
-			'indent' => false,
-			'show-body-only' => true,
-			'wrap' => 0,
-			'output-bom' => false,
-			'output-html' => true,
-			'newline' => 'LF',
-			'quiet' => true,
-		), 'utf8');
+		$body = $tidy->repairString($body, ['doctype' => 'omit', 'bare' => $config['markup_repair_tidy_bare'], 'literal-attributes' => true, 'indent' => false, 'show-body-only' => true, 'wrap' => 0, 'output-bom' => false, 'output-html' => true, 'newline' => 'LF', 'quiet' => true], 'utf8');
 		$body = str_replace("\n", '', $body);
 	}
 
@@ -2283,7 +2180,7 @@ function markup(&$body, $track_cites = false, $op = false) {
 }
 
 function escape_markup_modifiers($string) {
-	return preg_replace('@<(tinyboard) ([\w\s]+)>@mi', '<$1 escape $2>', $string);
+	return preg_replace('@<(tinyboard) ([\w\s]+)>@mi', '<$1 escape $2>', (string) $string);
 }
 
 function defined_flags_accumulate($desired_flags) {
@@ -2304,11 +2201,12 @@ function defined_flags_accumulate($desired_flags) {
 
 function utf8tohtml($utf8) {
 	$flags = defined_flags_accumulate(['ENT_QUOTES', 'ENT_SUBSTITUTE', 'ENT_DISALLOWED']);
-	return htmlspecialchars($utf8, $flags, 'UTF-8');
+	return htmlspecialchars((string) $utf8, $flags, 'UTF-8');
 }
 
 function ordutf8($string, &$offset) {
-	$code = ord(substr($string, $offset,1)); 
+	$bytesnumber = null;
+ $code = ord(substr((string) $string, $offset,1)); 
 	if ($code >= 128) { // otherwise 0xxxxxxx
 		if ($code < 224)
 			$bytesnumber = 2; // 110xxxxx
@@ -2319,13 +2217,13 @@ function ordutf8($string, &$offset) {
 		$codetemp = $code - 192 - ($bytesnumber > 2 ? 32 : 0) - ($bytesnumber > 3 ? 16 : 0);
 		for ($i = 2; $i <= $bytesnumber; $i++) {
 			$offset ++;
-			$code2 = ord(substr($string, $offset, 1)) - 128; //10xxxxxx
+			$code2 = ord(substr((string) $string, $offset, 1)) - 128; //10xxxxxx
 			$codetemp = $codetemp*64 + $code2;
 		}
 		$code = $codetemp;
 	}
 	$offset += 1;
-	if ($offset >= strlen($string))
+	if ($offset >= strlen((string) $string))
 		$offset = -1;
 	return $code;
 }
@@ -2334,11 +2232,14 @@ function ordutf8($string, &$offset) {
 function strip_combining_chars($str) {
 	global $config;
 	$limit = strval($config['max_combining_chars']+1);
-	return preg_replace('/(\p{Me}|\p{Mn}){'.$limit.',}/u','', $str);
+	return preg_replace('/(\p{Me}|\p{Mn}){'.$limit.',}/u','', (string) $str);
 }
 
 function buildThread($id, $return = false, $mod = false) {
-	global $board, $config, $build_pages;
+	$body = null;
+ $hasnoko50 = null;
+ $antibot = null;
+ global $board, $config, $build_pages;
 	$id = round($id);
 
 	if (event('build-thread', $id))
@@ -2353,7 +2254,7 @@ function buildThread($id, $return = false, $mod = false) {
 	if ($config['try_smarter'] && !$mod)
 		$build_pages[] = thread_find_page($id);
 
-	$action = generation_strategy('sb_thread', array($board['uri'], $id));
+	$action = generation_strategy('sb_thread', [$board['uri'], $id]);
 
 	if ($action == 'rebuild' || $return || $mod) {
 		$query = prepare(sprintf("SELECT * FROM ``posts_%s`` WHERE (`thread` IS NULL AND `id` = :id) OR `thread` = :id ORDER BY `thread`,`id`", $board['uri']));
@@ -2375,24 +2276,12 @@ function buildThread($id, $return = false, $mod = false) {
 		$hasnoko50 = $thread->postCount() >= $config['noko50_min'];
 		$antibot = $mod || $return ? false : create_antibot($board['uri'], $id);
 
-		$body = Element($config['file_thread'], array(
-			'board' => $board,
-			'thread' => $thread,
-			'body' => $thread->build(),
-			'config' => $config,
-			'id' => $id,
-			'mod' => $mod,
-			'hasnoko50' => $hasnoko50,
-			'isnoko50' => false,
-			'antibot' => $antibot,
-			'boardlist' => createBoardlist($mod),
-			'return' => ($mod ? '?' . $board['url'] . $config['file_index'] : $config['root'] . $board['dir'] . $config['file_index'])
-		));
+		$body = Element($config['file_thread'], ['board' => $board, 'thread' => $thread, 'body' => $thread->build(), 'config' => $config, 'id' => $id, 'mod' => $mod, 'hasnoko50' => $hasnoko50, 'isnoko50' => false, 'antibot' => $antibot, 'boardlist' => createBoardlist($mod), 'return' => ($mod ? '?' . $board['url'] . $config['file_index'] : $config['root'] . $board['dir'] . $config['file_index'])]);
 
 		// json api
 		if ($config['api']['enabled'] && !$mod) {
 			$api = new Api();
-			$json = json_encode($api->translateThread($thread));
+			$json = json_encode($api->translateThread($thread), JSON_THROW_ON_ERROR);
 			$jsonFilename = $board['dir'] . $config['dir']['res'] . $id . '.json';
 			file_write($jsonFilename, $json);
 		}
@@ -2403,10 +2292,10 @@ function buildThread($id, $return = false, $mod = false) {
 	}
 
 	if ($action == 'delete' && !$return && !$mod) {
-		$noko50fn = $board['dir'] . $config['dir']['res'] . link_for(array('id' => $id), true);
+		$noko50fn = $board['dir'] . $config['dir']['res'] . link_for(['id' => $id], true);
 		file_unlink($noko50fn);
 
-		file_unlink($board['dir'] . $config['dir']['res'] . link_for(array('id' => $id)));
+		file_unlink($board['dir'] . $config['dir']['res'] . link_for(['id' => $id]));
 	} elseif ($return) {
 		return $body;
 	} elseif ($action == 'rebuild') {
@@ -2467,9 +2356,9 @@ function buildThread50($id, $return = false, $mod = false, $thread = null, $anti
 		$allPosts = $thread->posts;
 
 		$thread->posts = array_slice($allPosts, -$config['noko50_count']);
-		$thread->omitted += count($allPosts) - count($thread->posts);
+		$thread->omitted += (is_countable($allPosts) ? count($allPosts) : 0) - count($thread->posts);
 		foreach ($allPosts as $index => $post) {
-			if ($index == count($allPosts)-count($thread->posts))
+			if ($index == (is_countable($allPosts) ? count($allPosts) : 0)-count($thread->posts))
 				break;  
 			if ($post->files)
 				$thread->omitted_images += $post->num_files;
@@ -2478,19 +2367,7 @@ function buildThread50($id, $return = false, $mod = false, $thread = null, $anti
 
 	$hasnoko50 = $thread->postCount() >= $config['noko50_min'];		
 
-	$body = Element($config['file_thread'], array(
-		'board' => $board,
-		'thread' => $thread,
-		'body' => $thread->build(false, true),
-		'config' => $config,
-		'id' => $id,
-		'mod' => $mod,
-		'hasnoko50' => $hasnoko50,
-		'isnoko50' => true,
-		'antibot' => $mod ? false : ($antibot ? $antibot : create_antibot($board['uri'], $id)),
-		'boardlist' => createBoardlist($mod),
-		'return' => ($mod ? '?' . $board['url'] . $config['file_index'] : $config['root'] . $board['dir'] . $config['file_index'])
-	));	
+	$body = Element($config['file_thread'], ['board' => $board, 'thread' => $thread, 'body' => $thread->build(false, true), 'config' => $config, 'id' => $id, 'mod' => $mod, 'hasnoko50' => $hasnoko50, 'isnoko50' => true, 'antibot' => $mod ? false : ($antibot ?: create_antibot($board['uri'], $id)), 'boardlist' => createBoardlist($mod), 'return' => ($mod ? '?' . $board['url'] . $config['file_index'] : $config['root'] . $board['dir'] . $config['file_index'])]);	
 
 	if ($return) {
 		return $body;
@@ -2531,8 +2408,8 @@ function generate_tripcode($name) {
 	if ($trip = event('tripcode', $name))
 		return $trip;
 
-	if (!preg_match('/^([^#]+)?(##|#)(.+)$/', $name, $match))
-		return array($name);
+	if (!preg_match('/^([^#]+)?(##|#)(.+)$/', (string) $name, $match))
+		return [$name];
 
 	$name = $match[1];
 	$secure = $match[2] == '##';
@@ -2558,7 +2435,7 @@ function generate_tripcode($name) {
 			$trip = '!' . substr(crypt($trip, $salt), -10);
 	}
 
-	return array($name, $trip);
+	return [$name, $trip];
 }
 
 // Highest common factor
@@ -2640,7 +2517,7 @@ function rDNS($ip_addr) {
 		$host = gethostbyaddr($ip_addr);
 	} else {
 		$resp = shell_exec_error('host -W 3 ' . $ip_addr);
-		if (preg_match('/domain name pointer ([^\s]+)$/', $resp, $m))
+		if (preg_match('/domain name pointer ([^\s]+)$/', (string) $resp, $m))
 			$host = $m[1];
 		else
 			$host = $ip_addr;
@@ -2671,7 +2548,7 @@ function DNS($host) {
 			$ip_addr = false;
 	} else {
 		$resp = shell_exec_error('host -W 1 ' . $host);
-		if (preg_match('/has address ([^\s]+)$/', $resp, $m))
+		if (preg_match('/has address ([^\s]+)$/', (string) $resp, $m))
 			$ip_addr = $m[1];
 		else
 			$ip_addr = false;
@@ -2695,11 +2572,7 @@ function shell_exec_error($command, $suppress_stdout = false) {
 
 	if ($config['debug']) {
 		$time = microtime(true) - $start;
-		$debug['exec'][] = array(
-			'command' => $command,
-			'time' => '~' . round($time * 1000, 2) . 'ms',
-			'response' => $return ? $return : null
-		);
+		$debug['exec'][] = ['command' => $command, 'time' => '~' . round($time * 1000, 2) . 'ms', 'response' => $return ?: null];
 		$debug['time']['exec'] += $time;
 	}
 
@@ -2713,8 +2586,8 @@ function shell_exec_error($command, $suppress_stdout = false) {
  */
 function diceRoller($post) {
 	global $config;
-	if(strpos(strtolower($post->email), 'dice%20') === 0) {
-		$dicestr = str_split(substr($post->email, strlen('dice%20')));
+	if(str_starts_with(strtolower((string) $post->email), 'dice%20')) {
+		$dicestr = str_split(substr((string) $post->email, strlen('dice%20')));
 
 		// Get params
 		$diceX = '';
@@ -2724,12 +2597,12 @@ function diceRoller($post) {
 		$curd = 'diceX';
 		for($i = 0; $i < count($dicestr); $i ++) {
 			if(is_numeric($dicestr[$i])) {
-				$$curd .= $dicestr[$i];
+				${$curd} .= $dicestr[$i];
 			} else if($dicestr[$i] == 'd') {
 				$curd = 'diceY';
 			} else if($dicestr[$i] == '-' || $dicestr[$i] == '+') {
 				$curd = 'diceZ';
-				$$curd = $dicestr[$i];
+				${$curd} = $dicestr[$i];
 			}
 		}
 
@@ -2749,10 +2622,10 @@ function diceRoller($post) {
 
 		// Continue only if we have valid values
 		if($diceX > 0 && $diceY > 0) {
-			$dicerolls = array();
+			$dicerolls = [];
 			$dicesum = $diceZ;
 			for($i = 0; $i < $diceX; $i++) {
-				$roll = rand(1, $diceY);
+				$roll = random_int(1, $diceY);
 				$dicerolls[] = $roll;
 				$dicesum += $roll;
 			}
@@ -2775,10 +2648,10 @@ function slugify($post) {
 	elseif (isset ($post['body_nomarkup']) && $post['body_nomarkup'])
 		$slug = $post['body_nomarkup'];
 	elseif (isset ($post['body']) && $post['body'])
-		$slug = strip_tags($post['body']);
+		$slug = strip_tags((string) $post['body']);
 
 	// Fix UTF-8 first
-	$slug = mb_convert_encoding($slug, "UTF-8", "UTF-8");
+	$slug = mb_convert_encoding((string) $slug, "UTF-8", "UTF-8");
 
 	// Transliterate local characters like ü, I wonder how would it work for weird alphabets :^)
 	$slug = iconv("UTF-8", "ASCII//TRANSLIT//IGNORE", $slug);
@@ -2806,12 +2679,13 @@ function slugify($post) {
 }
 
 function link_for($post, $page50 = false, $foreignlink = false, $thread = false) {
-	global $config, $board;
+	$tpl = null;
+ global $config, $board;
 
 	$post = (array)$post;
 
 	// Where do we need to look for OP?
-	$b = $foreignlink ? $foreignlink : (isset($post['board']) ? array('uri' => $post['board']) : $board);
+	$b = $foreignlink ?: (isset($post['board']) ? ['uri' => $post['board']] : $board);
 
 	$id = (isset($post['thread']) && $post['thread']) ? $post['thread'] : $post['id'];
 
@@ -2852,7 +2726,7 @@ function link_for($post, $page50 = false, $foreignlink = false, $thread = false)
 }
 
 function prettify_textarea($s){
-	return str_replace("\t", '&#09;', str_replace("\n", '&#13;&#10;', htmlentities($s)));
+	return str_replace("\t", '&#09;', str_replace("\n", '&#13;&#10;', htmlentities((string) $s)));
 }
 
 /*class HTMLPurifier_URIFilter_NoExternalImages extends HTMLPurifier_URIFilter {
@@ -2893,7 +2767,7 @@ function markdown($s) {
 	return $pd->text($s);
 }
 
-function generation_strategy($fun, $array=array()) { global $config;
+function generation_strategy($fun, $array=[]) { global $config;
 	$action = false;
 
 	foreach ($config['generation_strategies'] as $s) {
@@ -2907,7 +2781,7 @@ function generation_strategy($fun, $array=array()) { global $config;
 			return 'rebuild';
 		case 'defer':
 			// Ok, it gets interesting here :)
-			get_queue('generate')->push(serialize(array('build', $fun, $array, $action)));
+			get_queue('generate')->push(serialize(['build', $fun, $array, $action]));
 			return 'ignore';
 		case 'build_on_load':
 			return 'delete';
@@ -2915,18 +2789,18 @@ function generation_strategy($fun, $array=array()) { global $config;
 }
 
 function strategy_immediate($fun, $array) {
-	return array('immediate');
+	return ['immediate'];
 }
 
 function strategy_smart_build($fun, $array) {
-	return array('build_on_load');
+	return ['build_on_load'];
 }
 
 function strategy_sane($fun, $array) { global $config;
 	if (php_sapi_name() == 'cli') return false;
 	else if (isset($_POST['mod'])) return false;
 	// Thread needs to be done instantly. Same with a board page, but only if posting a new thread.
-	else if ($fun == 'sb_thread' || ($fun == 'sb_board' && $array[1] == 1 && isset ($_POST['page']))) return array('immediate');
+	else if ($fun == 'sb_thread' || ($fun == 'sb_board' && $array[1] == 1 && isset ($_POST['page']))) return ['immediate'];
 	else return false;
 }
 
@@ -2934,41 +2808,41 @@ function strategy_sane($fun, $array) { global $config;
 function strategy_first($fun, $array) {
 	switch ($fun) {
 	case 'sb_thread':
-		return array('defer');
+		return ['defer'];
 	case 'sb_board':
-		if ($array[1] > 8) return array('build_on_load');
-		else return array('defer');
+		if ($array[1] > 8) return ['build_on_load'];
+		else return ['defer'];
 	case 'sb_api':
-		return array('defer');
+		return ['defer'];
 	case 'sb_catalog':
-		return array('defer');
+		return ['defer'];
 	case 'sb_recent':
-		return array('build_on_load');
+		return ['build_on_load'];
 	case 'sb_sitemap':
-		return array('build_on_load');
+		return ['build_on_load'];
 	case 'sb_ukko':
-		return array('defer');
+		return ['defer'];
 	}
 }
 
 function base32_decode($d) {
 	$charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-	$d = str_split($d);
+	$d = str_split((string) $d);
 	$l = array_pop($d);
 	$b = '';
 	foreach ($d as $c) {
 		$b .= sprintf("%05b", strpos($charset, $c));
 	}
 	$padding = 8 - strlen($b) % 8;
-	$b .= str_pad(decbin(strpos($charset, $l)), $padding, '0', STR_PAD_LEFT);
+	$b .= str_pad(decbin(strpos($charset, (string) $l)), $padding, '0', STR_PAD_LEFT);
 
-	return implode('', array_map(function($c) { return chr(bindec($c)); }, str_split($b, 8)));
+	return implode('', array_map(fn($c) => chr(bindec($c)), str_split($b, 8)));
 }
 
 function base32_encode($d) {
 	$charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-	$b = implode('', array_map(function($c) { return sprintf("%08b", ord($c)); }, str_split($d)));
-	return implode('', array_map(function($c) use ($charset) { return $charset[bindec($c)]; }, str_split($b, 5)));
+	$b = implode('', array_map(fn($c) => sprintf("%08b", ord($c)), str_split((string) $d)));
+	return implode('', array_map(fn($c) => $charset[bindec($c)], str_split($b, 5)));
 }
 
 function cloak_ip($ip) {
@@ -3023,18 +2897,18 @@ function uncloak_ip($ip) {
 	if (empty($ipcrypt_key))
 		return $ip;
 
-	$juice = substr($ip, strlen($config['ipcrypt_prefix']) + 1);
+	$juice = substr((string) $ip, strlen((string) $config['ipcrypt_prefix']) + 1);
 	if ($delimiter = strpos($juice, '.')) {
 		$juice = substr($juice, 0, $delimiter);
 	}
 
-	if (substr($ip, 0, strlen($config['ipcrypt_prefix']) + 1) === $config['ipcrypt_prefix'].':') {
+	if (substr((string) $ip, 0, strlen((string) $config['ipcrypt_prefix']) + 1) === $config['ipcrypt_prefix'].':') {
 		$plaintext = openssl_decrypt(base32_decode($juice), 'rc4-40', $ipcrypt_key, OPENSSL_RAW_DATA);
 
 		if ($plaintext === false || strlen($plaintext) == 0)
 			return '#ERROR';
 
-		if (strlen($ip) >= 16)
+		if (strlen((string) $ip) >= 16)
 			return inet_ntop($plaintext);
 		else
 			return long2ip(unpack('N', $plaintext)[1]);
@@ -3044,7 +2918,7 @@ function uncloak_ip($ip) {
 }
 
 function cloak_mask($mask) {
-	list($net, $block) = array_pad(explode('/', $mask, 2), 2, null);
+	[$net, $block] = array_pad(explode('/', (string) $mask, 2), 2, null);
 	$mask = cloak_ip($net);
 	if ($block) {
 		$mask .= '/'.$block;
@@ -3054,7 +2928,7 @@ function cloak_mask($mask) {
 }
 
 function uncloak_mask($mask) {
-	list($addr, $block) = array_pad(explode('/', $mask, 2), 2, null);
+	[$addr, $block] = array_pad(explode('/', (string) $mask, 2), 2, null);
 	$mask = uncloak_ip($addr);
 	if ($mask === '#ERROR') {
 		$mask = $addr;
