@@ -6,7 +6,7 @@ require_once("captcha.php");
 function rand_string($length, $charset) {
   $ret = "";
   while ($length--) {
-    $ret .= mb_substr($charset, rand(0, mb_strlen($charset, 'utf-8')-1), 1, 'utf-8');
+    $ret .= mb_substr((string) $charset, random_int(0, mb_strlen((string) $charset, 'utf-8')-1), 1, 'utf-8');
   }
   return $ret;
 }
@@ -43,7 +43,7 @@ case "get":
   $query = $pdo->prepare("INSERT INTO `captchas` (`cookie`, `extra`, `text`, `created_at`) VALUES (?, ?, ?, ?)");
   $query->execute(                               [$cookie,  $extra,  $text,  time()]);
 
-  echo json_encode(["cookie" => $cookie, "captchahtml" => $html, "expires_in" => $expires_in]);
+  echo json_encode(["cookie" => $cookie, "captchahtml" => $html, "expires_in" => $expires_in], JSON_THROW_ON_ERROR);
   
   break;
 

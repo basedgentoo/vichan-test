@@ -1,7 +1,7 @@
 <?php
 $dir = "static/banners/";
 $files = scandir($dir, SCANDIR_SORT_NONE);
-$images = array_diff($files, array('.', '..'));
+$images = array_diff($files, ['.', '..']);
 $name = $images[array_rand($images)];
 // open the file in a binary mode
 $fp = fopen($dir . $name, 'rb');

@@ -15,7 +15,7 @@
 		$boards = listBoards(TRUE);
 	}
 	
-	$body = Element('search_form.html', Array('boards' => $boards, 'board' => isset($_GET['board']) ? $_GET['board'] : false, 'search' => isset($_GET['search']) ? str_replace('"', '&quot;', utf8tohtml($_GET['search'])) : false));
+	$body = Element('search_form.html', ['boards' => $boards, 'board' => $_GET['board'] ?? false, 'search' => isset($_GET['search']) ? str_replace('"', '&quot;', (string) utf8tohtml($_GET['search'])) : false]);
 	
 	if(isset($_GET['search']) && !empty($_GET['search']) && isset($_GET['board']) && in_array($_GET['board'], $boards)) {		
 		$phrase = $_GET['search'];
@@ -50,14 +50,14 @@
 		
 		openBoard($_GET['board']);
 		
-		$filters = Array();
+		$filters = [];
 		
 		function search_filters($m) {
 			global $filters;
 			$name = $m[2];
-			$value = isset($m[4]) ? $m[4] : $m[3];
+			$value = $m[4] ?? $m[3];
 			
-			if(!in_array($name, array('id', 'thread', 'subject', 'name'))) {
+			if(!in_array($name, ['id', 'thread', 'subject', 'name'])) {
 				// unknown filter
 				return $m[0];
 			}
@@ -67,16 +67,12 @@
 			return $m[1];
 		}
 		
-		$phrase = trim(preg_replace_callback('/(^|\s)(\w+):("(.*)?"|[^\s]*)/', 'search_filters', $phrase));
+		$phrase = trim(preg_replace_callback('/(^|\s)(\w+):("(.*)?"|[^\s]*)/', 'search_filters', (string) $phrase));
 		
 		if(!preg_match('/[^*^\s]/', $phrase) && empty($filters)) {
 			_syslog(LOG_WARNING, 'Query too broad.');
 			$body .= '<p class="unimportant" style="text-align:center">(Query too broad.)</p>';
-			echo Element($config['file_page_template'], Array(
-				'config'=>$config,
-				'title'=>'Search',
-				'body'=>$body,
-			));
+			echo Element($config['file_page_template'], ['config'=>$config, 'title'=>'Search', 'body'=>$body]);
 			exit;
 		}
 		
@@ -93,7 +89,7 @@
 		$phrase = str_replace('`', '!`', $phrase);
 
 		$like = '';
-		$match = Array();
+		$match = [];
 		
 		// Find exact phrases
 		if(preg_match_all('/"(.+?)"/', $phrase, $m)) {
@@ -114,7 +110,7 @@
 		foreach($match as &$phrase) {
 			if(!empty($like))
 				$like .= ' AND ';
-			$phrase = preg_replace('/^\'(.+)\'$/', '\'%$1%\'', $phrase);
+			$phrase = preg_replace('/^\'(.+)\'$/', '\'%$1%\'', (string) $phrase);
 			$like .= '`body` LIKE ' . $phrase . ' ESCAPE \'!\'';
 		}
 		
@@ -133,11 +129,7 @@
 		if($query->rowCount() == $search_limit) {
 			_syslog(LOG_WARNING, 'Query too broad.');
 			$body .= '<p class="unimportant" style="text-align:center">('._('Query too broad.').')</p>';
-			echo Element($config['file_page_template'], Array(
-				'config'=>$config,
-				'title'=>'Search',
-				'body'=>$body,
-			));
+			echo Element($config['file_page_template'], ['config'=>$config, 'title'=>'Search', 'body'=>$body]);
 			exit;
 		}
 
@@ -167,9 +159,4 @@
 			$body .= '<p style="text-align:center" class="unimportant">('._('No results.').')</p>';
 	}
 		
-	echo Element($config['file_page_template'], Array(
-		'config'=>$config,
-		'title'=>_('Search'),
-		'boardlist'=>createBoardlist(),
-		'body'=>'' . $body
-	));
+	echo Element($config['file_page_template'], ['config'=>$config, 'title'=>_('Search'), 'boardlist'=>createBoardlist(), 'body'=>'' . $body]);

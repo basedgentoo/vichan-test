@@ -31,7 +31,7 @@ function imagecreatefrombmp($filename) {
    $BMP = unpack('Vheader_size/Vwidth/Vheight/vplanes/vbits_per_pixel'.
 				 '/Vcompression/Vsize_bitmap/Vhoriz_resolution'.
 				 '/Vvert_resolution/Vcolors_used/Vcolors_important', fread($f1,40));
-   $BMP['colors'] = pow(2,$BMP['bits_per_pixel']);
+   $BMP['colors'] = 2 ** $BMP['bits_per_pixel'];
    if ($BMP['size_bitmap'] == 0) $BMP['size_bitmap'] = $FILE['file_size'] - $FILE['bitmap_offset'];
    $BMP['bytes_per_pixel'] = $BMP['bits_per_pixel']/8;
    $BMP['bytes_per_pixel2'] = ceil($BMP['bytes_per_pixel']);
@@ -40,8 +40,8 @@ function imagecreatefrombmp($filename) {
    $BMP['decal'] = 4-(4*$BMP['decal']);
    if ($BMP['decal'] == 4) $BMP['decal'] = 0;
 
-   $PALETTE = array();
-   if ($BMP['colors'] < 16777216)
+   $PALETTE = [];
+   if ($BMP['colors'] < 16_777_216)
    {
 	$PALETTE = unpack('V'.$BMP['colors'], fread($f1,$BMP['colors']*4));
    }
@@ -129,13 +129,13 @@ function imagebmp(&$img, $filename='') {
 	$result .= int_to_dword(0); // Number of important colour (4b)
 
 	// is faster than chr()
-	$arrChr = array();
+	$arrChr = [];
 	for ($i=0; $i<256; $i++){
 	$arrChr[$i] = chr($i);
 	}
 
 	// creates image data
-	$bgfillcolor = array('red'=>0, 'green'=>0, 'blue'=>0);
+	$bgfillcolor = ['red'=>0, 'green'=>0, 'blue'=>0];
 
 	// bottom to top - left to right - attention blue green red !!!
 	$y=$height-1;

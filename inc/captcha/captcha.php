@@ -1,30 +1,28 @@
 <?php
 class CzaksCaptcha {
-  var $content = array();
+  public $content = [];
 
-  var $width, $height, $color, $charset, $style;
+  public $width, $height, $color, $charset, $style;
 
   function __construct($text, $left, $top, $charset=false) {
     if (!$charset) {
       $charset = 'abcdefghijklmnopqrstuvwxyz';
     }
 
-    $len = mb_strlen($text, 'utf-8');
+    $len = mb_strlen((string) $text, 'utf-8');
 
     $this->width = $left;
     $this->height = $top;
 
-    $this->charset = preg_split('//u', $charset);
-    
+    $this->charset = preg_split('//u', (string) $charset);
+
     $this->style = "";
 
     for ($i = 0; $i < $len; $i++) {
-      $this->content[] = array(mb_substr($text, $i, 1, 'utf-8'), "top" => $top / 2 - $top / 4,
-                                                                 "left" => $left/10 + 9*$left*$i/10/$len,
-                                                                 "position" => "absolute");
+      $this->content[] = [mb_substr((string) $text, $i, 1, 'utf-8'), "top" => $top / 2 - $top / 4, "left" => $left/10 + 9*$left*$i/10/$len, "position" => "absolute"];
     }
 
-    $this->color = "hsla(".rand(1,360).", 76%, 78%, 1)";
+    $this->color = "hsla(".random_int(1,360).", 76%, 78%, 1)";
 
     $this->add_junk();
     $this->mutate_sizes();
@@ -41,47 +39,43 @@ class CzaksCaptcha {
   function mutate_sizes() {
     foreach ($this->content as &$v) {
       if (!isset ($v['font-size']))
-        $v['font-size'] = rand($this->height/3 - 4, $this->height/3 + 8);
+        $v['font-size'] = random_int($this->height/3 - 4, $this->height/3 + 8);
     }
   }
   function mutate_positions() {
     foreach ($this->content as &$v) {
-      $v['top'] += rand(-10,10);
-      $v['left'] += rand(-10,10);
+      $v['top'] += random_int(-10,10);
+      $v['left'] += random_int(-10,10);
     }
   }
   function mutate_transform() {
-    $fromto = array('6'=>'9', '9'=>'6', '8'=>'8', '0'=>'0',
-                    'z'=>'z', 's'=>'s', 'n'=>'u', 'u'=>'n',
-                    'a'=>'ɐ', 'e'=>'ə', 'p'=>'d', 'd'=>'p',
-                    'A'=>'∀', 'E'=>'∃', 'H'=>'H', 'o'=>'o',
-		    'O'=>'O');
+    $fromto = ['6'=>'9', '9'=>'6', '8'=>'8', '0'=>'0', 'z'=>'z', 's'=>'s', 'n'=>'u', 'u'=>'n', 'a'=>'ɐ', 'e'=>'ə', 'p'=>'d', 'd'=>'p', 'A'=>'∀', 'E'=>'∃', 'H'=>'H', 'o'=>'o', 'O'=>'O'];
 
     foreach ($this->content as &$v) {
       $basefrom = -20;
       $baseto = 20;
 
-      if (isset($fromto[$v[0]]) && rand(0,1)) {
+      if (isset($fromto[$v[0]]) && random_int(0,1)) {
         $v[0] = $fromto[$v[0]];
         $basefrom = 160;
         $baseto = 200;
       }
 
-      $v['transform'] = 'rotate('.rand($basefrom,$baseto).'deg)';
-      $v['-ms-transform'] = 'rotate('.rand($basefrom,$baseto).'deg)';
-      $v['-webkit-transform'] = 'rotate('.rand($basefrom,$baseto).'deg)';
+      $v['transform'] = 'rotate('.random_int($basefrom,$baseto).'deg)';
+      $v['-ms-transform'] = 'rotate('.random_int($basefrom,$baseto).'deg)';
+      $v['-webkit-transform'] = 'rotate('.random_int($basefrom,$baseto).'deg)';
     }
   }
   function randomize(&$a = false) {
     if ($a === false) {
       $a = &$this->content;
     }
-  
+
     shuffle($a);
 
     foreach ($a as &$v) {
       $this->shuffle_assoc($v);
-      
+
       if (is_array ($v[0])) {
         $this->randomize($v[0]);
       }
@@ -89,145 +83,145 @@ class CzaksCaptcha {
   }
 
   function add_junk() {
-    $count = rand(200, 300);
+    $count = random_int(200, 300);
 
     while ($count--) {
-      $elem = array();
+      $elem = [];
 
-      $elem['top'] = rand(0, $this->height);
-      $elem['left'] = rand(0, $this->width);
-      
+      $elem['top'] = random_int(0, $this->height);
+      $elem['left'] = random_int(0, $this->width);
+
       $elem['position'] = 'absolute';
 
-      $elem[0] = $this->charset[rand(0, count($this->charset)-1)];
+      $elem[0] = $this->charset[random_int(0, (is_countable($this->charset) ? count($this->charset) : 0)-1)];
 
-      switch($t = rand (0,9)) {
+      switch($t = random_int (0,9)) {
         case 0:
           $elem['display'] = 'none'; break;
         case 1:
-          $elem['top'] = rand(-60, -90); break;
+          $elem['top'] = random_int(-60, -90); break;
         case 2:
-          $elem['left'] = rand(-40, -70); break;
+          $elem['left'] = random_int(-40, -70); break;
         case 3:
-          $elem['top'] = $this->height + rand(10, 60); break;
+          $elem['top'] = $this->height + random_int(10, 60); break;
         case 4:
-          $elem['left'] = $this->width + rand(10, 60); break;
+          $elem['left'] = $this->width + random_int(10, 60); break;
         case 5:
           $elem['color'] = $this->color; break;
         case 6:
           $elem['visibility'] = 'hidden'; break;
         case 7:
-          $elem['height'] = rand(0,2);
+          $elem['height'] = random_int(0,2);
           $elem['overflow'] = 'hidden'; break;
         case 8:
-          $elem['width'] = rand(0,1);
+          $elem['width'] = random_int(0,1);
           $elem['overflow'] = 'hidden'; break;
         case 9:
-          $elem['font-size'] = rand(2, 6); break;
+          $elem['font-size'] = random_int(2, 6); break;
       }
 
       $this->content[] = $elem;
     }
   }
-  
+
   function mutate_anchors() {
     foreach ($this->content as &$elem) {
-      if (rand(0,1)) {
+      if (random_int(0,1)) {
         $elem['right'] = $this->width - $elem['left'] - (int)(0.5*$elem['font-size']);
         unset($elem['left']);
       }
-      if (rand(0,1)) {
+      if (random_int(0,1)) {
         $elem['bottom'] = $this->height - $elem['top'] - (int)(1.5*$elem['font-size']);
         unset($elem['top']);
       }
     }
   }
-  
+
   function mutate_containers() {
     for ($i = 0; $i <= 80; $i++) {
       $new = [];
-      $new['width'] = rand(0, $this->width*2);
-      $new['height'] = rand(0, $this->height*2);
-      $new['top'] = rand(-$this->height * 2, $this->height * 2);
+      $new['width'] = random_int(0, $this->width*2);
+      $new['height'] = random_int(0, $this->height*2);
+      $new['top'] = random_int(-$this->height * 2, $this->height * 2);
       $new['bottom'] = $this->height - ($new['top'] + $new['height']);
-      $new['left'] = rand(-$this->width * 2, $this->width * 2);
+      $new['left'] = random_int(-$this->width * 2, $this->width * 2);
       $new['right'] = $this->width - ($new['left'] + $new['width']);
-      
+
       $new['position'] = 'absolute';
 
       $new[0] = [];
-      
-      $cnt = rand(0,10);
+
+      $cnt = random_int(0,10);
       for ($j = 0; $j < $cnt; $j++) {
         $elem = array_pop($this->content);
         if (!$elem) break;
-        
+
         if (isset($elem['top'])) $elem['top'] -= $new['top'];
         if (isset($elem['bottom'])) $elem['bottom'] -= $new['bottom'];
         if (isset($elem['left'])) $elem['left'] -= $new['left'];
         if (isset($elem['right'])) $elem['right'] -= $new['right'];
-        
+
         $new[0][] = $elem;
       }
-      
-      if (rand (0,1)) unset($new['top']);
+
+      if (random_int (0,1)) unset($new['top']);
                  else unset($new['bottom']);
-      if (rand (0,1)) unset($new['left']);
+      if (random_int (0,1)) unset($new['left']);
                  else unset($new['right']);
-                 
+
       $this->content[] = $new;
-      
+
       shuffle($this->content);
     }
   }
-  
+
   function mutate_margins(&$a = false) {
     if ($a === false) {
       $a = &$this->content;
     }
-    
+
     foreach ($a as &$v) {
       $ary = ['top', 'left', 'bottom', 'right'];
       shuffle($ary);
-      $cnt = rand(0,4);
+      $cnt = random_int(0,4);
       $ary = array_slice($ary, 0, $cnt);
-      
+
       foreach ($ary as $prop) {
-	$margin = rand(-1000, 1000);
-	
+	$margin = random_int(-1000, 1000);
+
 	$v['margin-'.$prop] = $margin;
-	
+
 	if (isset($v[$prop])) {
 	  $v[$prop] -= $margin;
 	}
       }
-      
+
       if (is_array($v[0])) {
 	$this->mutate_margins($v[0]);
       }
     }
   }
-  
+
   function mutate_styles(&$a = false) {
     if ($a === false) {
       $a = &$this->content;
     }
-    
+
     foreach ($a as &$v) {
       $content = $v[0];
       unset($v[0]);
-      $styles = array_splice($v, 0, rand(0, 6));
+      $styles = array_splice($v, 0, random_int(0, 6));
       $v[0] = $content;
-      
-      $id_or_class = rand(0,1);
+
+      $id_or_class = random_int(0,1);
       $param = $id_or_class ? "id" : "class";
       $prefix = $id_or_class ? "#" : ".";
-      $genname = "zz-".base_convert(rand(1,999999999), 10, 36);
-      
-      if ($styles || rand(0,1)) {
+      $genname = "zz-".base_convert(random_int(1,999_999_999), 10, 36);
+
+      if ($styles || random_int(0,1)) {
         $this->style .= $prefix.$genname."{";
         $this->style .= $this->rand_whitespace();
-      
+
         foreach ($styles as $k => $val) {
           if (is_int($val)) {
             $val = "".$val."px";
@@ -241,9 +235,9 @@ class CzaksCaptcha {
         $this->style .= "}";
         $this->style .= $this->rand_whitespace();
       }
-      
+
       $v[$param] = $genname;
-    
+
       if (is_array($v[0])) {
 	$this->mutate_styles($v[0]);
       }
@@ -252,19 +246,19 @@ class CzaksCaptcha {
 
   function to_html(&$a = false) {
     $inside = true;
-    
+
     if ($a === false) {
       if ($this->style) {
         echo "<style type='text/css'>";
         echo $this->style;
         echo "</style>";
       }
-    
+
       echo "<div style='position: relative; width: ".$this->width."px; height: ".$this->height."px; overflow: hidden; background-color: ".$this->color."'>";
       $a = &$this->content;
       $inside = false;
     }
-    
+
     foreach ($a as &$v) {
       $letter = $v[0];
 
@@ -272,7 +266,7 @@ class CzaksCaptcha {
 
       echo "<div";
       echo $this->rand_whitespace(1);
-      
+
       if (isset ($v['id'])) {
         echo "id='$v[id]'";
         echo $this->rand_whitespace(1);
@@ -282,10 +276,10 @@ class CzaksCaptcha {
       if (isset ($v['class'])) {
         echo "class='$v[class]'";
         echo $this->rand_whitespace(1);
-                
+
         unset ($v['class']);
       }
-      
+
       echo "style='";
 
       foreach ($v as $k => $val) {
@@ -302,14 +296,14 @@ class CzaksCaptcha {
 
       echo "'>";
       echo $this->rand_whitespace();
-      
+
       if (is_array ($letter)) {
         $this->to_html($letter);
       }
       else {
         echo $letter;
       }
-      
+
       echo "</div>";
     }
 
@@ -320,7 +314,7 @@ class CzaksCaptcha {
   }
 
   function rand_whitespace($r = 0) {
-    switch (rand($r,4)) {
+    switch (random_int($r,4)) {
       case 0:
         return "";
       case 1:

@@ -5,7 +5,7 @@ $expires_in = 120;
 function rand_string($length, $charset) {
 	$ret = "";
 	while ($length--) {
-		$ret .= mb_substr($charset, rand(0, mb_strlen($charset, 'utf-8')-1), 1, 'utf-8');
+		$ret .= mb_substr((string) $charset, random_int(0, mb_strlen((string) $charset, 'utf-8')-1), 1, 'utf-8');
 	}
 	return $ret;
 }
@@ -42,7 +42,7 @@ switch ($mode) {
 			header('Content-Type: image/png');
 			echo $rawimg;
 		} else {
-			echo json_encode(["cookie" => $cookie, "captchahtml" => $html, "expires_in" => $expires_in]);
+			echo json_encode(["cookie" => $cookie, "captchahtml" => $html, "expires_in" => $expires_in], JSON_THROW_ON_ERROR);
 		}
 		break;
 	case 'check':
